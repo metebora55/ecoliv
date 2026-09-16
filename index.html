@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ECOLIV — Balıkçılıkta yeni standart</title>
+<meta name="description" content="ECOLIV, balıkları yapay zekâ ile analiz edip uygun olmayanları canlı geri gönderen, uygun olanları insancıl biçimde bayıltan akıllı hasat sistemidir.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,300..900;1,62..125,400..700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  /* derin su — her iki temada sabit */
+  --abyss:#04161F;
+  --deep:#072736;
+  --shelf:#0C3A4E;
+  --cyan:#2FC9E8;
+  --cyan-2:#0E8FB5;
+  --kelp:#46D19B;
+  --coral:#FF6F5B;
+  --amber:#F4B942;
+  --violet:#9B8CFF;
+  --foam:#E7F3F7;
+  --foam-dim:#9FBECB;
+  --foam-faint:rgba(231,243,247,.13);
+
+  /* yüzey panelleri — temaya göre değişir */
+  --paper:#F2F7F9;
+  --paper-2:#FFFFFF;
+  --ink:#06222F;
+  --ink-2:#0E4257;
+  --ink-dim:#4C7183;
+  --hair:rgba(6,34,47,.13);
+  --hair-soft:rgba(6,34,47,.07);
+  --lift:0 1px 2px rgba(6,34,47,.05), 0 12px 28px -18px rgba(6,34,47,.35);
+
+  --maxw:1180px;
+  --gut:clamp(20px,5vw,64px);
+  --r-s:6px; --r-m:14px; --r-l:26px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#08202D;
+    --paper-2:#0B2A39;
+    --ink:#E7F3F7;
+    --ink-2:#7FE0F5;
+    --ink-dim:#93B4C2;
+    --hair:rgba(231,243,247,.15);
+    --hair-soft:rgba(231,243,247,.08);
+    --lift:0 1px 2px rgba(0,0,0,.4), 0 14px 32px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#08202D;
+  --paper-2:#0B2A39;
+  --ink:#E7F3F7;
+  --ink-2:#7FE0F5;
+  --ink-dim:#93B4C2;
+  --hair:rgba(231,243,247,.15);
+  --hair-soft:rgba(231,243,247,.08);
+  --lift:0 1px 2px rgba(0,0,0,.4), 0 14px 32px -20px rgba(0,0,0,.9);
+}
+
+/* ============ TEMEL ============ */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+body{
+  margin:0;
+  background:var(--abyss);
+  color:var(--foam);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:17px;line-height:1.62;font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img,svg{max-width:100%}
+a{color:inherit}
+h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;line-height:1.04;font-variation-settings:"wdth" 112}
+p{margin:0}
+:focus-visible{outline:2.5px solid var(--cyan);outline-offset:3px;border-radius:3px}
+
+.skip{position:absolute;left:12px;top:-60px;z-index:99;background:var(--cyan);color:#052733;
+  padding:10px 16px;border-radius:8px;font-weight:600;text-decoration:none;transition:top .18s}
+.skip:focus-visible{top:12px}
+.wrap{max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gut)}
+.sect{padding-block:clamp(72px,9vw,124px);position:relative}
+.sect--paper{background:var(--paper);color:var(--ink)}
+.sect--deep{background:var(--deep)}
+.sect--abyss{background:var(--abyss)}
+
+/* Bölüm başlığı: derinlik numarası + geniş kapitaller */
+.head{display:flex;gap:clamp(16px,3vw,34px);align-items:flex-start;margin-bottom:clamp(30px,4vw,52px)}
+.head__idx{
+  font-family:"Archivo";font-variation-settings:"wdth" 78;font-weight:700;
+  font-size:.72rem;letter-spacing:.1em;padding-top:.7em;
+  color:var(--cyan-2);flex:none;font-variant-numeric:tabular-nums;
+}
+.sect--deep .head__idx,.sect--abyss .head__idx{color:var(--cyan)}
+.head__body{min-width:0;flex:1}
+.h2{
+  font-size:clamp(1.85rem,5.4vw,3.35rem);font-weight:800;
+  font-variation-settings:"wdth" 122;letter-spacing:.008em;
+  text-transform:uppercase;
+}
+.sect--paper .h2{color:var(--ink)}
+.lede{margin-top:1.05em;max-width:62ch;font-size:clamp(1rem,1.7vw,1.17rem);color:var(--ink-dim);line-height:1.66}
+.sect--deep .lede,.sect--abyss .lede{color:var(--foam-dim)}
+
+/* ============ DERİNLİK ŞERİDİ ============ */
+.depth{
+  position:fixed;right:14px;top:50%;transform:translateY(-50%);
+  z-index:40;display:flex;flex-direction:column;align-items:center;gap:7px;
+  pointer-events:none;mix-blend-mode:normal;
+}
+.depth__tick{width:1px;height:11px;background:#6F9FB2;opacity:.45;transition:opacity .25s,height .25s,background .25s}
+.depth__tick.on{opacity:1;height:19px;background:#1AA8CC}
+.depth__val{
+  font-family:"Archivo";font-variation-settings:"wdth" 78;font-weight:700;
+  font-size:.58rem;letter-spacing:.09em;color:#6F9FB2;
+  writing-mode:vertical-rl;margin-top:6px;font-variant-numeric:tabular-nums;
+}
+@media (max-width:980px){.depth{display:none}}
+
+/* ============ NAV ============ */
+.nav{
+  position:sticky;top:0;z-index:50;
+  background:rgba(4,22,31,.82);backdrop-filter:blur(14px) saturate(1.3);
+  -webkit-backdrop-filter:blur(14px) saturate(1.3);
+  border-bottom:1px solid var(--foam-faint);
+}
+.nav__in{display:flex;align-items:center;gap:22px;height:60px;max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gut)}
+.mark{
+  font-family:"Archivo";font-weight:900;font-variation-settings:"wdth" 118;
+  font-size:1.06rem;letter-spacing:.11em;color:var(--foam);text-decoration:none;flex:none;
+  display:flex;align-items:center;gap:9px;
+}
+.mark__dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 4px rgba(47,201,232,.18)}
+.nav__links{
+  display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-left:auto;
+  -ms-overflow-style:none;
+}
+.nav__links::-webkit-scrollbar{display:none}
+.nav__links a{
+  color:var(--foam-dim);text-decoration:none;font-size:.83rem;white-space:nowrap;
+  padding:7px 11px;border-radius:99px;transition:color .18s,background .18s;
+}
+.nav__links a:hover{color:var(--foam);background:rgba(231,243,247,.07)}
+.nav__links a[aria-current="true"]{color:var(--abyss);background:var(--cyan)}
+@media (max-width:760px){.nav__in{gap:14px;height:54px}.nav__links a{padding:6px 9px;font-size:.78rem}}
+
+/* ============ HERO ============ */
+.hero{position:relative;background:var(--abyss);overflow:hidden;padding-block:clamp(48px,7vw,86px) clamp(0px,2vw,24px)}
+.hero__caustic{
+  position:absolute;inset:-20% -10% auto -10%;height:70%;pointer-events:none;
+  background:
+    radial-gradient(120% 60% at 22% 0%,rgba(47,201,232,.22),transparent 62%),
+    radial-gradient(90% 55% at 74% 4%,rgba(14,143,181,.24),transparent 60%);
+  filter:blur(6px);
+}
+.hero__in{position:relative;max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gut)}
+.hero__kicker{
+  display:inline-flex;align-items:center;gap:9px;font-size:.79rem;color:var(--foam-dim);
+  border:1px solid var(--foam-faint);border-radius:99px;padding:6px 14px 6px 9px;margin-bottom:26px;
+}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--kelp);animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(70,209,155,.5)}50%{box-shadow:0 0 0 6px rgba(70,209,155,0)}}
+.hero h1{
+  font-size:clamp(3.4rem,14.5vw,9.6rem);font-weight:900;font-variation-settings:"wdth" 125;
+  letter-spacing:-.005em;line-height:.86;margin:0;
+  background:linear-gradient(176deg,var(--foam) 24%,#8FD6EA 74%,#4BA9C8 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+}
+.hero__tag{
+  margin-top:clamp(16px,2.4vw,26px);font-size:clamp(1.08rem,2.6vw,1.62rem);
+  font-weight:300;color:var(--foam);max-width:24ch;line-height:1.28;
+}
+.hero__tag b{font-weight:600;color:var(--cyan)}
+.hero__cols{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,5vw,60px);align-items:end;margin-top:clamp(20px,3vw,30px)}
+.hero__desc{font-size:1.02rem;color:var(--foam-dim);max-width:52ch;line-height:1.72}
+.hero__cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;text-decoration:none;
+  font-size:.93rem;font-weight:600;padding:13px 22px;border-radius:99px;
+  transition:transform .16s,background .2s,border-color .2s;border:1px solid transparent;
+}
+.btn--p{background:var(--cyan);color:#052733}
+.btn--p:hover{background:#4FD8F2;transform:translateY(-2px)}
+.btn--g{border-color:var(--foam-faint);color:var(--foam)}
+.btn--g:hover{border-color:var(--cyan);color:var(--cyan)}
+@media (max-width:860px){.hero__cols{grid-template-columns:1fr;align-items:start}}
+
+/* hero istatistik şeridi */
+.strip{border-top:1px solid var(--foam-faint);border-bottom:1px solid var(--foam-faint);background:rgba(7,39,54,.5)}
+.strip__in{max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gut);display:grid;grid-template-columns:repeat(4,1fr)}
+.strip__i{padding:22px 20px 22px 0;border-right:1px solid var(--foam-faint)}
+.strip__i:last-child{border-right:0}
+.strip__i:not(:first-child){padding-left:24px}
+.strip__n{font-family:"Archivo";font-weight:800;font-variation-settings:"wdth" 118;font-size:clamp(1.6rem,3.6vw,2.3rem);color:var(--cyan);line-height:1}
+.strip__l{font-size:.81rem;color:var(--foam-dim);margin-top:7px;line-height:1.4}
+@media (max-width:760px){
+  .strip__in{grid-template-columns:1fr 1fr}
+  .strip__i{border-bottom:1px solid var(--foam-faint);padding:16px 16px 16px 0}
+  .strip__i:nth-child(2n){border-right:0;padding-left:16px}
+  .strip__i:nth-child(2n+1){padding-left:0}
+  .strip__i:nth-last-child(-n+2){border-bottom:0}
+}
+
+/* ============ BORU HATTI ANİMASYONU ============ */
+.pipe{position:relative;margin-top:clamp(28px,4vw,42px)}
+.pipe svg{display:block;width:100%;height:auto}
+.pipe{position:relative}
+.pipe__scroll{overflow-x:auto;overflow-y:hidden}
+.pipe svg{min-width:880px}
+.fish{visibility:hidden;offset-rotate:auto;offset-distance:0%}
+@supports (offset-path: path("M 0 0 L 1 1")){.fish{visibility:visible}}
+.fish--main{animation:travel 9s linear infinite}
+.fish--ret{animation:travel 7.4s linear infinite}
+@keyframes travel{from{offset-distance:0%}to{offset-distance:100%}}
+.scanline{animation:scan 2.6s cubic-bezier(.5,0,.5,1) infinite}
+@keyframes scan{0%,100%{transform:translateX(0);opacity:.15}45%{opacity:1}50%{transform:translateX(74px);opacity:1}}
+.blip{animation:blip 2.6s ease-in-out infinite}
+@keyframes blip{0%,38%{opacity:.2}52%,70%{opacity:1}100%{opacity:.2}}
+@media (prefers-reduced-motion: reduce){
+  .fish--main,.fish--ret{animation:none}
+  .fish--main{offset-distance:62%}
+  .fish--ret{offset-distance:48%}
+}
+.pipe__legend{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:14px;font-size:.78rem;color:var(--foam-dim)}
+.pipe__legend span{display:inline-flex;align-items:center;gap:8px}
+.sw{width:16px;height:3px;border-radius:2px;display:inline-block}
+
+/* ============ KÜRESEL TABLO ============ */
+.globe{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--hair)}
+.globe__i{padding:34px 28px 30px 0;border-right:1px solid var(--hair)}
+.globe__i:last-child{border-right:0}
+.globe__i:not(:first-child){padding-left:30px}
+.globe__n{
+  font-family:"Archivo";font-weight:900;font-variation-settings:"wdth" 125;
+  font-size:clamp(3rem,8vw,5.2rem);line-height:.88;color:var(--ink-2);
+  display:block;letter-spacing:-.02em;
+}
+.globe__t{font-weight:600;font-size:1.02rem;margin-top:14px;color:var(--ink)}
+.globe__d{font-size:.93rem;color:var(--ink-dim);margin-top:7px;line-height:1.55}
+@media (max-width:760px){
+  .globe{grid-template-columns:1fr}
+  .globe__i{border-right:0;border-bottom:1px solid var(--hair);padding:24px 0}
+  .globe__i:not(:first-child){padding-left:0}
+  .globe__i:last-child{border-bottom:0}
+}
+.src{font-size:.78rem;color:var(--ink-dim);margin-top:26px;opacity:.85}
+.sect--deep .src,.sect--abyss .src{color:var(--foam-dim)}
+
+.pullquote{
+  margin-top:clamp(40px,6vw,70px);padding-left:clamp(18px,3vw,30px);
+  border-left:3px solid var(--cyan-2);
+  font-family:"Archivo";font-variation-settings:"wdth" 108;font-weight:500;
+  font-size:clamp(1.15rem,3.2vw,1.95rem);line-height:1.26;max-width:22ch;color:var(--ink);
+}
+.sect--deep .pullquote,.sect--abyss .pullquote{color:var(--foam);border-left-color:var(--cyan)}
+
+/* ============ SORUN IZGARASI ============ */
+.moment{
+  display:grid;grid-template-columns:auto 1fr;gap:clamp(14px,2.4vw,24px);align-items:center;
+  background:rgba(255,111,91,.09);border:1px solid rgba(255,111,91,.28);
+  border-radius:var(--r-m);padding:clamp(18px,3vw,26px);margin-bottom:clamp(34px,5vw,54px);
+}
+.moment__ic{width:36px;height:36px;color:var(--coral);flex:none}
+.moment__t{font-weight:600;color:var(--coral);font-size:1rem}
+.moment__d{color:var(--foam-dim);font-size:.95rem;margin-top:3px;line-height:1.55}
+
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--foam-faint);border-left:1px solid var(--foam-faint)}
+.pgrid__i{padding:26px 24px 30px;border-right:1px solid var(--foam-faint);border-bottom:1px solid var(--foam-faint)}
+.pgrid__ic{width:22px;height:22px;color:var(--coral);opacity:.9}
+.pgrid__t{font-weight:600;font-size:1rem;margin-top:16px;color:var(--foam)}
+.pgrid__d{font-size:.9rem;color:var(--foam-dim);margin-top:8px;line-height:1.58}
+@media (max-width:1000px){.pgrid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.pgrid{grid-template-columns:1fr}}
+
+/* ============ ÇÖZÜM ============ */
+.sol{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(30px,5vw,64px);align-items:center}
+@media (max-width:900px){.sol{grid-template-columns:1fr}}
+.outs{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--hair);border:1px solid var(--hair);border-radius:var(--r-m);overflow:hidden}
+.outs__i{background:var(--paper-2);padding:26px 22px}
+.outs__n{font-family:"Archivo";font-weight:800;font-variation-settings:"wdth" 118;font-size:1.7rem;color:var(--ink-2);line-height:1}
+.outs__t{font-weight:600;margin-top:12px;color:var(--ink);font-size:.98rem}
+.outs__d{font-size:.88rem;color:var(--ink-dim);margin-top:5px;line-height:1.55}
+@media (max-width:480px){.outs{grid-template-columns:1fr}}
+
+/* ============ SÜREÇ RAYI ============ */
+.rail{position:relative;margin-top:8px}
+.rail__line{position:absolute;left:19px;top:14px;bottom:14px;width:2px;background:linear-gradient(180deg,var(--cyan),var(--cyan-2) 45%,rgba(14,143,181,.15))}
+.step{display:grid;grid-template-columns:40px 1fr;gap:clamp(16px,3vw,30px);padding:0 0 clamp(26px,3.4vw,38px)}
+.step:last-child{padding-bottom:0}
+.step__n{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  background:var(--deep);border:2px solid var(--cyan);color:var(--cyan);
+  font-family:"Archivo";font-weight:800;font-size:1rem;position:relative;z-index:1;
+  font-variant-numeric:tabular-nums;
+}
+.step__b{padding-top:5px}
+.step__t{font-family:"Archivo";font-variation-settings:"wdth" 112;font-weight:700;font-size:clamp(1.12rem,2.4vw,1.42rem);color:var(--foam)}
+.step__d{color:var(--foam-dim);margin-top:8px;max-width:64ch;font-size:.97rem}
+.step__meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
+.tag{font-size:.74rem;padding:4px 11px;border-radius:99px;border:1px solid var(--foam-faint);color:var(--foam-dim)}
+.tag--k{border-color:rgba(70,209,155,.4);color:var(--kelp)}
+.tag--c{border-color:rgba(47,201,232,.4);color:var(--cyan)}
+
+/* ============ SAHA DİYAGRAMI ============ */
+.field{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:clamp(28px,4vw,44px)}
+.field__i{
+  background:rgba(231,243,247,.045);border:1px solid var(--foam-faint);
+  border-radius:var(--r-m);padding:22px 20px;position:relative;
+}
+.field__s{font-family:"Archivo";font-weight:700;font-size:.7rem;letter-spacing:.14em;color:var(--cyan-2);font-variation-settings:"wdth" 80}
+.field__t{font-weight:600;margin-top:10px;font-size:1rem}
+.field__d{font-size:.87rem;color:var(--foam-dim);margin-top:6px;line-height:1.55}
+@media (max-width:860px){.field{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.field{grid-template-columns:1fr}}
+
+/* ============ SONUÇ METRİKLERİ ============ */
+.res{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:14px}
+.res__c{border:1px solid var(--foam-faint);border-radius:var(--r-l);padding:26px 24px;background:linear-gradient(162deg,rgba(47,201,232,.09),rgba(47,201,232,.02))}
+.res__l{font-size:.79rem;color:var(--foam-dim);letter-spacing:.04em}
+.res__n{font-family:"Archivo";font-weight:800;font-variation-settings:"wdth" 122;font-size:clamp(2.4rem,5.5vw,3.5rem);color:var(--cyan);line-height:1;margin-top:10px}
+.res__d{font-size:.9rem;color:var(--foam-dim);margin-top:14px;line-height:1.55}
+.res__chart{grid-row:span 2;border:1px solid var(--foam-faint);border-radius:var(--r-l);padding:26px 24px;background:linear-gradient(200deg,rgba(14,143,181,.16),rgba(7,39,54,.3))}
+.res__chart h3{font-size:1.12rem;font-weight:700;font-variation-settings:"wdth" 108}
+@media (max-width:900px){.res{grid-template-columns:1fr 1fr}.res__chart{grid-row:auto;grid-column:span 2}}
+@media (max-width:520px){.res{grid-template-columns:1fr}.res__chart{grid-column:auto}}
+
+/* ============ KONTROL PANELİ ============ */
+.panel{
+  border:1px solid var(--hair);border-radius:var(--r-l);overflow:hidden;
+  background:var(--paper-2);box-shadow:var(--lift);
+}
+.panel__bar{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--hair);background:var(--paper)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--hair);display:inline-block}
+.panel__url{margin-left:12px;font-size:.74rem;color:var(--ink-dim);font-family:"IBM Plex Sans"}
+.panel__body{display:grid;grid-template-columns:186px 1fr}
+.side{border-right:1px solid var(--hair);padding:18px 0;background:var(--paper)}
+.side__b{
+  display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:.85rem;color:var(--ink-dim);
+  border:0;background:none;width:100%;text-align:left;cursor:pointer;font-family:inherit;
+  border-left:2px solid transparent;transition:color .16s,background .16s;
+}
+.side__b:hover{color:var(--ink);background:var(--hair-soft)}
+.side__b[aria-selected="true"]{color:var(--ink-2);background:var(--hair-soft);border-left-color:var(--ink-2);font-weight:600}
+.side__ic{width:15px;height:15px;flex:none;opacity:.8}
+.main{padding:22px clamp(16px,2.4vw,26px) 26px;min-width:0}
+.main h3{font-size:1.24rem;color:var(--ink-2);font-variation-settings:"wdth" 108;font-weight:700}
+.main__sub{font-size:.82rem;color:var(--ink-dim);margin-top:5px;display:flex;align-items:center;gap:7px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-top:20px}
+.kpi{border:1px solid var(--hair);border-radius:var(--r-m);padding:14px 15px 10px;background:var(--paper-2)}
+.kpi__top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.kpi__ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:.8rem}
+.kpi__ch{font-size:.72rem;font-weight:600;color:var(--kelp)}
+.kpi__n{font-family:"Archivo";font-weight:800;font-size:1.5rem;color:var(--ink);margin-top:10px;line-height:1;font-variation-settings:"wdth" 112}
+.kpi__l{font-size:.75rem;color:var(--ink-dim);margin-top:5px}
+.kpi__spark{margin-top:8px;display:block;width:100%;height:30px}
+.chartscroll{overflow-x:auto}
+.chartscroll svg{min-width:470px}
+.tblwrap{margin-top:22px;overflow-x:auto;border:1px solid var(--hair);border-radius:var(--r-m)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.85rem}
+thead th{
+  text-align:left;padding:11px 14px;font-size:.7rem;letter-spacing:.08em;color:var(--ink-dim);
+  font-weight:600;border-bottom:1px solid var(--hair);background:var(--paper);white-space:nowrap;
+}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--hair-soft);color:var(--ink);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:600;white-space:nowrap}
+.pill--a{background:rgba(70,209,155,.16);color:#1E9E70}
+.pill--b{background:rgba(244,185,66,.18);color:#9A7415}
+.pill--x{background:rgba(255,111,91,.16);color:#C93F2C}
+.pill--i{background:rgba(47,201,232,.16);color:#0B7C9C}
+.pill--n{background:var(--hair-soft);color:var(--ink-dim)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .pill--a{color:#6BE7B6}
+  :root:not([data-theme="light"]) .pill--b{color:#F7CE73}
+  :root:not([data-theme="light"]) .pill--x{color:#FF9483}
+  :root:not([data-theme="light"]) .pill--i{color:#6FDDF7}
+}
+.mono{font-variant-numeric:tabular-nums}
+@media (max-width:820px){
+  .panel__body{grid-template-columns:1fr}
+  .side{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--hair);padding:8px}
+  .side__b{width:auto;white-space:nowrap;border-left:0;border-bottom:2px solid transparent;border-radius:8px}
+  .side__b[aria-selected="true"]{border-left:0;border-bottom-color:var(--ink-2)}
+  .kpis{grid-template-columns:1fr 1fr}
+}
+.tabpanel[hidden]{display:none}
+
+/* ============ REKABET ============ */
+.cmp{overflow-x:auto;border-radius:var(--r-m);border:1px solid var(--foam-faint)}
+.cmp table{min-width:620px;font-size:.93rem}
+.cmp thead th{background:rgba(231,243,247,.05);color:var(--foam-dim);border-bottom:1px solid var(--foam-faint);font-size:.78rem;letter-spacing:.05em}
+.cmp thead th:not(:first-child){text-align:center}
+.cmp tbody td{color:var(--foam);border-bottom:1px solid var(--foam-faint)}
+.cmp tbody td:not(:first-child){text-align:center}
+.cmp tbody tr:last-child td{border-bottom:0}
+.cmp .own{background:rgba(47,201,232,.08)}
+.cmp thead .own{color:var(--cyan);font-weight:700}
+.yes{color:var(--kelp);font-size:1.05rem;font-weight:700}
+.no{color:var(--coral);font-size:1.05rem;font-weight:700}
+
+/* ============ GELİR ============ */
+.rev{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair);border-radius:var(--r-m);overflow:hidden}
+.rev__i{background:var(--paper-2);padding:28px 24px}
+.rev__ic{width:34px;height:34px;color:var(--ink-2)}
+.rev__t{font-weight:600;margin-top:16px;font-size:1.06rem;color:var(--ink)}
+.rev__d{font-size:.92rem;color:var(--ink-dim);margin-top:7px;line-height:1.58}
+.rev__type{font-size:.74rem;color:var(--ink-dim);margin-top:14px;padding-top:12px;border-top:1px solid var(--hair-soft)}
+@media (max-width:820px){.rev{grid-template-columns:1fr}}
+
+.cost{display:grid;grid-template-columns:auto 1fr;gap:clamp(18px,4vw,44px);align-items:center;margin-top:clamp(30px,4vw,48px);padding:clamp(22px,3.4vw,34px);border:1px solid var(--hair);border-radius:var(--r-l);background:var(--paper-2)}
+.cost__n{font-family:"Archivo";font-weight:900;font-variation-settings:"wdth" 122;font-size:clamp(2.6rem,8vw,4.6rem);line-height:.9;color:#0F9B6E;letter-spacing:-.02em}
+.cost__u{font-size:.78rem;color:var(--ink-dim);margin-top:8px;line-height:1.4}
+.cost__d{color:var(--ink-dim);font-size:.98rem;max-width:56ch}
+@media (max-width:640px){.cost{grid-template-columns:1fr}}
+
+.roi{margin-top:clamp(26px,3.4vw,38px);overflow-x:auto;border:1px solid var(--hair);border-radius:var(--r-m)}
+.roi table{min-width:660px}
+.roi thead th{font-size:.72rem}
+.roi tbody td{font-weight:500}
+.roi tr.kot{background:rgba(226,74,56,.055)}
+.roi tr.tem{background:rgba(43,114,224,.055)}
+.roi tr.iyi{background:rgba(34,169,111,.06)}
+.roi .big{font-family:"Archivo";font-weight:700;font-size:1.12rem;font-variation-settings:"wdth" 112}
+.roi tr.kot .big{color:#C93F2C}
+.roi tr.tem .big{color:#1D6FD6}
+.roi tr.iyi .big{color:#1E9E70}
+.chip{display:inline-block;padding:5px 14px;border-radius:99px;font-size:.78rem;font-weight:700;color:#fff}
+.chip--kot{background:#E24A38}.chip--tem{background:#2B72E0}.chip--iyi{background:#22A96F}
+
+/* ============ PAZAR ============ */
+.mkt{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(26px,5vw,58px);align-items:center}
+@media (max-width:860px){.mkt{grid-template-columns:1fr}}
+.mkt__list{display:flex;flex-direction:column;gap:2px}
+.mkt__r{display:grid;grid-template-columns:52px 1fr auto;gap:16px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--foam-faint)}
+.mkt__r:last-child{border-bottom:0}
+.mkt__k{font-family:"Archivo";font-weight:800;font-size:.9rem;color:var(--cyan);letter-spacing:.06em;font-variation-settings:"wdth" 86}
+.mkt__d{font-size:.9rem;color:var(--foam-dim);line-height:1.5}
+.mkt__v{font-family:"Archivo";font-weight:800;font-size:clamp(1.2rem,3vw,1.7rem);color:var(--foam);font-variation-settings:"wdth" 116;white-space:nowrap}
+
+/* ============ PAYDAŞ ============ */
+.stake{display:flex;flex-direction:column;gap:clamp(30px,4vw,46px)}
+.stake__g h3{
+  font-family:"Archivo";font-style:italic;font-weight:800;font-variation-settings:"wdth" 108;
+  font-size:clamp(1.25rem,3.4vw,1.85rem);color:var(--ink-2);text-transform:uppercase;letter-spacing:.01em;
+}
+.stake__row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.stake__c{border:1px solid var(--hair);border-radius:var(--r-m);padding:20px;background:var(--paper-2);display:flex;gap:14px}
+.stake__c--hi{border-color:var(--ink-2);border-width:1.5px;box-shadow:var(--lift)}
+.stake__ic{width:34px;height:34px;border-radius:10px;background:var(--hair-soft);display:grid;place-items:center;flex:none;color:var(--ink-2)}
+.stake__c--hi .stake__ic{background:var(--ink-2);color:var(--paper-2)}
+.stake__t{font-weight:600;color:var(--ink);font-size:.98rem}
+.stake__d{font-size:.87rem;color:var(--ink-dim);margin-top:5px;line-height:1.55}
+@media (max-width:860px){.stake__row{grid-template-columns:1fr}}
+
+/* ============ GENİŞLEME ============ */
+.roadmap{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.rm{border:1px solid var(--foam-faint);border-radius:var(--r-m);padding:18px 16px;position:relative;background:rgba(231,243,247,.035)}
+.rm--now{border-color:var(--cyan);background:rgba(47,201,232,.1)}
+.rm__n{font-family:"Archivo";font-weight:800;font-size:.76rem;color:var(--cyan-2);letter-spacing:.1em;font-variation-settings:"wdth" 80}
+.rm--now .rm__n{color:var(--cyan)}
+.rm__c{font-weight:600;margin-top:9px;font-size:1rem}
+.rm__w{font-size:.8rem;color:var(--foam-dim);margin-top:4px}
+@media (max-width:980px){.roadmap{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:560px){.roadmap{grid-template-columns:repeat(2,1fr)}}
+
+/* ============ İHTİYAÇ ============ */
+.needs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.need{border:1px solid var(--hair);border-radius:var(--r-m);padding:26px 22px;background:var(--paper-2)}
+.need__ic{width:30px;height:30px;color:var(--ink-2)}
+.need__t{font-weight:600;margin-top:16px;font-size:1.05rem;color:var(--ink)}
+.need__d{font-size:.88rem;color:var(--ink-dim);margin-top:6px;line-height:1.55}
+@media (max-width:860px){.needs{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.needs{grid-template-columns:1fr}}
+
+/* ============ SKA ============ */
+.sdg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.sdg__i{border-radius:var(--r-s);padding:16px 14px 18px;color:#fff;min-height:120px;display:flex;flex-direction:column;justify-content:space-between}
+.sdg__n{font-family:"Archivo";font-weight:900;font-size:1.7rem;line-height:1;font-variation-settings:"wdth" 108}
+.sdg__t{font-size:.78rem;font-weight:600;line-height:1.28;margin-top:10px}
+@media (max-width:860px){.sdg{grid-template-columns:1fr 1fr}}
+
+/* ============ KAYNAKÇA ============ */
+.refs{display:grid;grid-template-columns:repeat(2,1fr);gap:0 clamp(24px,5vw,56px)}
+.ref{padding:15px 0;border-bottom:1px solid var(--hair)}
+.ref__k{font-size:.71rem;letter-spacing:.09em;color:var(--ink-dim);font-weight:600}
+.ref__b{font-size:.92rem;color:var(--ink);margin-top:4px;line-height:1.5}
+@media (max-width:760px){.refs{grid-template-columns:1fr}}
+
+/* ============ KAPANIŞ ============ */
+.close{background:var(--abyss);position:relative;overflow:hidden;text-align:center;padding-block:clamp(84px,12vw,150px)}
+.close__rays{position:absolute;inset:-30% -20% auto -20%;height:90%;background:conic-gradient(from 180deg at 50% 0%,transparent 0deg,rgba(47,201,232,.11) 20deg,transparent 40deg,rgba(47,201,232,.09) 62deg,transparent 88deg,rgba(47,201,232,.13) 112deg,transparent 140deg);filter:blur(2px);pointer-events:none}
+.close__in{position:relative;max-width:760px;margin-inline:auto;padding-inline:var(--gut)}
+.close h2{font-size:clamp(2.1rem,7.5vw,4.4rem);font-weight:900;font-variation-settings:"wdth" 124;text-transform:uppercase;letter-spacing:.01em}
+.close p{margin-top:22px;color:var(--foam-dim);font-size:clamp(1rem,2.2vw,1.2rem);line-height:1.6}
+.close__link{
+  display:inline-flex;align-items:center;gap:10px;margin-top:32px;text-decoration:none;
+  font-family:"Archivo";font-weight:700;font-size:clamp(1rem,2.4vw,1.25rem);color:var(--cyan);
+  border-bottom:1.5px solid rgba(47,201,232,.4);padding-bottom:4px;transition:border-color .2s;
+}
+.close__link:hover{border-bottom-color:var(--cyan)}
+
+.foot{background:var(--deep);border-top:1px solid var(--foam-faint);padding-block:30px}
+.foot__in{max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gut);display:flex;flex-wrap:wrap;gap:14px 30px;align-items:center;justify-content:space-between;font-size:.82rem;color:var(--foam-dim)}
+.foot a{color:var(--foam-dim);text-decoration:none}
+.foot a:hover{color:var(--cyan)}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#cozum">İçeriğe geç</a>
+
+<!-- DERİNLİK ŞERİDİ -->
+<div class="depth" aria-hidden="true" id="depth">
+  <span class="depth__tick"></span><span class="depth__tick"></span><span class="depth__tick"></span>
+  <span class="depth__tick"></span><span class="depth__tick"></span><span class="depth__tick"></span>
+  <span class="depth__tick"></span><span class="depth__tick"></span><span class="depth__tick"></span>
+  <span class="depth__tick"></span><span class="depth__tick"></span><span class="depth__tick"></span>
+  <span class="depth__val" id="depthVal">0 m</span>
+</div>
+
+<!-- NAV -->
+<nav class="nav" aria-label="Sayfa bölümleri">
+  <div class="nav__in">
+    <a href="#top" class="mark"><span class="mark__dot"></span>ECOLIV</a>
+    <div class="nav__links" id="navlinks">
+      <a href="#sorun">Sorun</a>
+      <a href="#cozum">Çözüm</a>
+      <a href="#surec">Nasıl çalışır</a>
+      <a href="#sonuc">Sonuçlar</a>
+      <a href="#arayuz">Arayüz</a>
+      <a href="#rekabet">Rekabet</a>
+      <a href="#gelir">Gelir modeli</a>
+      <a href="#pazar">Pazar</a>
+      <a href="#etki">Etki</a>
+      <a href="#yol">Yol haritası</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <div class="hero__caustic" aria-hidden="true"></div>
+  <div class="hero__in">
+    <span class="hero__kicker"><span class="pulse"></span>Yeni nesil hasat sistemi</span>
+    <h1>ECOLIV</h1>
+    <div class="hero__cols">
+      <div>
+        <p class="hero__tag">Balık, ölmeden önce <b>acı çekmek zorunda değil.</b></p>
+      </div>
+      <div>
+        <p class="hero__desc">ECOLIV, çiftlikten çıkan balığı yapay zekâ ile tek tek analiz eder: uygun olmayanı canlı olarak suya geri gönderir, uygun olanı saniyeler içinde insancıl biçimde bayıltır. Sonuç, sıfır strese dayalı bir hasat — daha yüksek et kalitesi, daha uzun raf ömrü, daha az fire.</p>
+        <div class="hero__cta">
+          <a class="btn btn--p" href="#surec">Sistemi incele</a>
+          <a class="btn btn--g" href="#gelir">Yatırım modeli</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- BORU HATTI -->
+    <div class="pipe">
+      <div class="pipe__scroll">
+      <svg viewBox="0 0 1240 300" role="img" aria-label="ECOLIV hasat hattı şeması: balıklar borudan çekilir, yapay zekâ analizinden geçer, uygun olmayanlar canlı geri döner, uygun olanlar insancıl bayıltmadan sonra sistemden çıkar.">
+        <defs>
+          <g id="fishGlyph">
+            <path d="M12 0C6 -6 -4 -7 -10 -3L-16 -8L-14 0L-16 8L-10 3C-4 7 6 6 12 0Z" fill="#7FE3F7"/>
+            <circle cx="6.5" cy="-1.4" r="1.5" fill="#062733"/>
+          </g>
+          <g id="fishGlyphAlt">
+            <path d="M12 0C6 -6 -4 -7 -10 -3L-16 -8L-14 0L-16 8L-10 3C-4 7 6 6 12 0Z" fill="#63E0B0"/>
+            <circle cx="6.5" cy="-1.4" r="1.5" fill="#062733"/>
+          </g>
+        </defs>
+
+        <!-- geri dönüş borusu -->
+        <path d="M -30,195 L 545,195 C 620,195 655,160 655,118 C 655,76 605,60 530,60 L -30,60"
+              fill="none" stroke="rgba(70,209,155,.13)" stroke-width="32" stroke-linecap="round"/>
+        <path d="M -30,195 L 545,195 C 620,195 655,160 655,118 C 655,76 605,60 530,60 L -30,60"
+              fill="none" stroke="rgba(70,209,155,.34)" stroke-width="1" stroke-dasharray="5 7"/>
+
+        <!-- ana boru -->
+        <path d="M -30,195 L 1270,195" fill="none" stroke="rgba(47,201,232,.13)" stroke-width="46" stroke-linecap="round"/>
+        <path d="M -30,195 L 1270,195" fill="none" stroke="rgba(47,201,232,.3)" stroke-width="1" stroke-dasharray="5 7"/>
+
+        <!-- kafes -->
+        <circle cx="34" cy="195" r="26" fill="none" stroke="rgba(231,243,247,.22)" stroke-width="1"/>
+        <circle cx="34" cy="195" r="17" fill="none" stroke="rgba(231,243,247,.16)" stroke-width="1"/>
+
+        <!-- tarayıcı modülü -->
+        <rect x="430" y="150" width="90" height="90" rx="13" fill="rgba(47,201,232,.07)" stroke="#2FC9E8" stroke-width="1.2"/>
+        <rect class="scanline" x="437" y="157" width="2" height="76" rx="1" fill="#2FC9E8"/>
+        <circle class="blip" cx="475" cy="136" r="3" fill="#2FC9E8"/>
+
+        <!-- bayıltma modülü -->
+        <rect x="700" y="150" width="104" height="90" rx="13" fill="rgba(70,209,155,.07)" stroke="#46D19B" stroke-width="1.2"/>
+        <path d="M752 170 l-11 20 h9 l-6 18 14 -22 h-9z" fill="#46D19B" opacity=".8"/>
+
+        <!-- çıkış -->
+        <path d="M1150 195 l24 0 m-8 -7 l8 7 -8 7" fill="none" stroke="#E7F3F7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>
+        <rect x="1000" y="163" width="120" height="64" rx="10" fill="rgba(231,243,247,.05)" stroke="rgba(231,243,247,.2)" stroke-width="1"/>
+
+        <!-- balıklar -->
+        <use href="#fishGlyph" class="fish fish--main" style="offset-path:path('M -30,195 L 1270,195');animation-delay:0s"/>
+        <use href="#fishGlyph" class="fish fish--main" style="offset-path:path('M -30,195 L 1270,195');animation-delay:-2.1s"/>
+        <use href="#fishGlyph" class="fish fish--main" style="offset-path:path('M -30,195 L 1270,195');animation-delay:-4.3s"/>
+        <use href="#fishGlyph" class="fish fish--main" style="offset-path:path('M -30,195 L 1270,195');animation-delay:-6.6s"/>
+        <use href="#fishGlyphAlt" class="fish fish--ret" style="offset-path:path('M -30,195 L 545,195 C 620,195 655,160 655,118 C 655,76 605,60 530,60 L -30,60');animation-delay:-1.1s"/>
+        <use href="#fishGlyphAlt" class="fish fish--ret" style="offset-path:path('M -30,195 L 545,195 C 620,195 655,160 655,118 C 655,76 605,60 530,60 L -30,60');animation-delay:-4.9s"/>
+
+        <!-- etiketler -->
+        <g font-family="IBM Plex Sans, sans-serif" fill="#9FBECB" font-size="15">
+          <text x="34" y="248" text-anchor="middle">Kafes</text>
+          <text x="475" y="266" text-anchor="middle" fill="#2FC9E8" font-weight="600">Yapay zekâ analizi</text>
+          <text x="475" y="285" text-anchor="middle" font-size="13">tür · boy · görünen hastalık</text>
+          <text x="752" y="266" text-anchor="middle" fill="#46D19B" font-weight="600">İnsancıl bayıltma</text>
+          <text x="752" y="285" text-anchor="middle" font-size="13">elektrikli · acısız · saniyeler içinde</text>
+          <text x="1060" y="200" text-anchor="middle" fill="#E7F3F7" font-weight="600" font-size="14">Kategorize çıkış</text>
+          <text x="1060" y="248" text-anchor="middle" font-size="13">bilinci kapalı · kayıt altında</text>
+          <text x="250" y="42" fill="#46D19B" font-weight="600">Uygun olmayan balık canlı olarak suya döner</text>
+        </g>
+      </svg>
+      </div>
+      <div class="pipe__legend">
+        <span><i class="sw" style="background:rgba(47,201,232,.5)"></i>Hasat hattı</span>
+        <span><i class="sw" style="background:rgba(70,209,155,.5)"></i>Canlı geri dönüş hattı</span>
+        <span>Karar noktası: yapay zekâ sınıflandırıcı</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- İSTATİSTİK ŞERİDİ -->
+<div class="strip">
+  <div class="strip__in">
+    <div class="strip__i"><div class="strip__n">%30</div><div class="strip__l">Raf ömrü artışı</div></div>
+    <div class="strip__i"><div class="strip__n">%40</div><div class="strip__l">Atık azalımı</div></div>
+    <div class="strip__i"><div class="strip__n">%20</div><div class="strip__l">Enerji tasarrufu</div></div>
+    <div class="strip__i"><div class="strip__n">2–4 yıl</div><div class="strip__l">Yatırımın geri ödeme süresi</div></div>
+  </div>
+</div>
+
+<!-- SORUN: KÜRESEL TABLO -->
+<section class="sect sect--paper" id="sorun">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">01</span>
+      <div class="head__body">
+        <h2 class="h2">Gıda sistemi<br>ayakta kalamıyor</h2>
+        <p class="lede">Dünya tatlı su kaynaklarının %70'i tarıma harcanırken, tarım ve hayvancılık küresel sera gazlarının %25'ini üretiyor. Buna rağmen nüfusun üçte biri açlıkla, üçte biri obezite riskiyle yaşıyor.</p>
+      </div>
+    </div>
+
+    <div class="globe">
+      <div class="globe__i">
+        <span class="globe__n">%70</span>
+        <div class="globe__t">Tarım için harcanan su</div>
+        <p class="globe__d">Dünyadaki tatlı su kaynaklarının %70'i tarımsal faaliyetlerde kullanılıyor.</p>
+      </div>
+      <div class="globe__i">
+        <span class="globe__n">%33</span>
+        <div class="globe__t">Besleyici gıda ihtiyacı</div>
+        <p class="globe__d">Küresel nüfusun üçte biri yeterince besleyici gıdaya erişemiyor.</p>
+      </div>
+      <div class="globe__i">
+        <span class="globe__n">%35</span>
+        <div class="globe__t">Çöpe giden balıklar</div>
+        <p class="globe__d">Avlanan balıkların %35'i sofraya ulaşamadan kayboluyor.</p>
+      </div>
+    </div>
+    <p class="src">Kaynak: TÜBİTAK — Bilim ve Teknik, Nisan 2025, Yıl 58, Sayı 689.</p>
+
+    <p class="pullquote">Bu tablo, sürdürülebilir bir gelecek için gıda sistemlerinde köklü bir dönüşümü zorunlu kılıyor.</p>
+  </div>
+</section>
+
+<!-- SORUN: HASAT ANI -->
+<section class="sect sect--abyss">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">02</span>
+      <div class="head__body">
+        <h2 class="h2">Sorun, hasat anında<br>başlıyor</h2>
+        <p class="lede">Balığın kalitesini belirleyen tek bir an var: sudan çıktığı an. Geleneksel yöntemlerde bu an, ölüme kadar süren dakikalarca bir stres sürecine dönüşüyor — ve bedelini hem hayvan hem üretici ödüyor.</p>
+      </div>
+    </div>
+
+    <div class="moment">
+      <svg class="moment__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path d="M12 3v6M12 21a8 8 0 0 0 8-8c0-4-8-10-8-10S4 9 4 13a8 8 0 0 0 8 8Z" stroke-linecap="round"/>
+        <path d="M9 13.5c1.2 1.6 4.8 1.6 6 0" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div class="moment__t">Çırpınarak ölüm</div>
+        <p class="moment__d">Ağdan çıkan balıklar dakikalarca oksijensiz kalır ya da buzlu suda soğuk şokuna girer. Bu süreçte salgılanan stres hormonları kas dokusunu bozar; ölüm acı vericidir ve ürünün kaderi daha ilk dakikada belirlenir.</p>
+      </div>
+    </div>
+
+    <div class="pgrid">
+      <div class="pgrid__i">
+        <svg class="pgrid__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7l6 7 4-4 8 8" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 13v5h-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="pgrid__t">Yüksek fire</div>
+        <p class="pgrid__d">Geleneksel yöntemlerle %35'e varan fire oranı, işletmelerin kârlılığını ciddi şekilde düşürür ve kaynak israfına neden olur.</p>
+      </div>
+      <div class="pgrid__i">
+        <svg class="pgrid__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3.5 21.5 20h-19L12 3.5Z" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke-linecap="round"/></svg>
+        <div class="pgrid__t">Et kalitesi bozulması</div>
+        <p class="pgrid__d">Soğuk şok ve boğulma stresi balık dokusunu bozar, renk ve lezzet kaybına yol açar. A kalite oranı düşük kalır.</p>
+      </div>
+      <div class="pgrid__i">
+        <svg class="pgrid__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4" stroke-linecap="round"/><path d="M10 14l4 4M14 14l-4 4" stroke-linecap="round"/></svg>
+        <div class="pgrid__t">Kısa raf ömrü</div>
+        <p class="pgrid__d">Stresli hasat nedeniyle raf ömrü yalnızca 7 gün civarında kalır. Uzak pazarlara taze ürün gönderilemez.</p>
+      </div>
+      <div class="pgrid__i">
+        <svg class="pgrid__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 15.5c2-2 5-2 7 0M9 9.5h.01M15 9.5h.01" stroke-linecap="round"/></svg>
+        <div class="pgrid__t">Hayvan refahı ihlali</div>
+        <p class="pgrid__d">Soğuk şok veya boğulma ile öldürme balıklara acı verir; etik standartlara ve refah gereksinimlerine aykırıdır.</p>
+      </div>
+      <div class="pgrid__i">
+        <svg class="pgrid__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3s5 4.5 5 9a5 5 0 0 1-10 0c0-4.5 5-9 5-9Z" stroke-linejoin="round"/><path d="M12 21v-3" stroke-linecap="round"/></svg>
+        <div class="pgrid__t">Enerji ve su israfı</div>
+        <p class="pgrid__d">Verimsiz sistemler aşırı enerji ve su tüketir. Karbon ayak izi yükselir, sürdürülebilirlik hedeflerine ulaşılamaz.</p>
+      </div>
+      <div class="pgrid__i">
+        <svg class="pgrid__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 19V5M4 19h16" stroke-linecap="round"/><path d="M8 15v-3M12 15v-6M16 15v-2" stroke-linecap="round"/></svg>
+        <div class="pgrid__t">Verim düşüklüğü</div>
+        <p class="pgrid__d">Manuel süreçler ve optimize edilmemiş sistemler düşük verimlilik, yüksek işçilik maliyeti ve zaman kaybı yaratır.</p>
+      </div>
+      <div class="pgrid__i">
+        <svg class="pgrid__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v2m0 6v2" stroke-linecap="round"/><path d="M14.5 9.5c0-1.1-1.1-2-2.5-2s-2.5.9-2.5 2 1.1 1.6 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2-2.5-.9-2.5-2" stroke-linecap="round"/></svg>
+        <div class="pgrid__t">Ekonomik kayıp</div>
+        <p class="pgrid__d">Fire, kalite kaybı ve kısa raf ömrü birleşince işletmeler önemli gelir kaybı yaşar. Rekabet gücü azalır.</p>
+      </div>
+      <div class="pgrid__i">
+        <svg class="pgrid__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h7" stroke-linecap="round"/><circle cx="18" cy="16" r="3.5"/><path d="M20.5 18.5 22.5 20.5" stroke-linecap="round"/></svg>
+        <div class="pgrid__t">İzlenebilirlik eksikliği</div>
+        <p class="pgrid__d">Dijital kayıt ve izlenebilirlik sadece %29 oranında. Gıda güvenliği, sertifikasyon ve şeffaflık gereksinimleri karşılanamaz.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ÇÖZÜM -->
+<section class="sect sect--paper" id="cozum">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">03</span>
+      <div class="head__body">
+        <h2 class="h2">Sıfır stresle<br>hasat</h2>
+      </div>
+    </div>
+
+    <div class="sol">
+      <div>
+        <p style="font-size:clamp(1.12rem,2.5vw,1.45rem);line-height:1.5;color:var(--ink);font-weight:300;max-width:34ch">ECOLIV, balıkları yapay zekâ ile analiz edip uygun olmayanları canlı geri gönderen, uygun olanları insancıl biçimde bayıltan akıllı bir hasat sistemidir.</p>
+        <p class="lede" style="margin-top:1.1em">Cihaz teknelerin ve çiftliklerin mevcut düzenine takılır; ayrı bir tesis, ayrı bir hat gerektirmez. Boru ile çekimden kategorize çıkışa kadar geçen süre dakikalar değil, saniyelerdir — ve her parti değiştirilemez bir kayda işlenir.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:22px">
+          <span class="tag" style="border-color:var(--hair);color:var(--ink-dim)">Donanım + yazılım</span>
+          <span class="tag" style="border-color:var(--hair);color:var(--ink-dim)">Mevcut çiftliğe entegre</span>
+          <span class="tag" style="border-color:var(--hair);color:var(--ink-dim)">Hibrit balıkçılık desteği</span>
+        </div>
+      </div>
+      <div class="outs">
+        <div class="outs__i"><div class="outs__n">01</div><div class="outs__t">Balıkta sıfır stres</div><p class="outs__d">Elektrikli bayıltma, ölümden önceki çırpınma sürecini tamamen ortadan kaldırır.</p></div>
+        <div class="outs__i"><div class="outs__n">02</div><div class="outs__t">Yüksek kalite</div><p class="outs__d">Stres hormonu salgılanmadığı için doku, renk ve lezzet korunur; A kalite oranı yükselir.</p></div>
+        <div class="outs__i"><div class="outs__n">03</div><div class="outs__t">Uzun raf ömrü</div><p class="outs__d">7 günlük raf ömrü uzayarak ürünün uzak pazarlara ulaşmasını mümkün kılar.</p></div>
+        <div class="outs__i"><div class="outs__n">04</div><div class="outs__t">Minimum israf</div><p class="outs__d">Uygun olmayan balık hiç öldürülmez; fire kaynakta engellenir.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SÜREÇ -->
+<section class="sect sect--deep" id="surec">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">04</span>
+      <div class="head__body">
+        <h2 class="h2">Altı adımda<br>bir hasat</h2>
+        <p class="lede">Bir balığın sistem içinde geçirdiği yol. Her adım sensörle ölçülür, her karar kayıt altına alınır.</p>
+      </div>
+    </div>
+
+    <div class="rail">
+      <div class="rail__line" aria-hidden="true"></div>
+      <ol style="list-style:none;padding:0;margin:0">
+        <li class="step">
+          <div class="step__n">1</div>
+          <div class="step__b">
+            <h3 class="step__t">Boru ile çekim</h3>
+            <p class="step__d">Balıklar ağdan elle alınmaz; kapalı bir boru sistemi aracılığıyla su içinde çekilir. Havayla temas etmeden taşındıkları için stressiz ve güvenli bir süreç başlar.</p>
+            <div class="step__meta"><span class="tag tag--c">Su içinde taşıma</span><span class="tag">Temassız</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step__n">2</div>
+          <div class="step__b">
+            <h3 class="step__t">Yapay zekâ analizi</h3>
+            <p class="step__d">Görüntü işleme modeli her balığı tek tek değerlendirir: türü, boyu ve görünen hastalık belirtileri saniyenin altında tespit edilir. Karar, insan gözüne bırakılmaz.</p>
+            <div class="step__meta"><span class="tag tag--c">Tür</span><span class="tag tag--c">Boy</span><span class="tag tag--c">Görünen hastalık</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step__n">3</div>
+          <div class="step__b">
+            <h3 class="step__t">Uygun olmayan balıkların ayrılması</h3>
+            <p class="step__d">Boyu yetersiz, hasta ya da koruma altındaki balıklar hattan ayrılır. Yapay zekâ kararıyla, hiç zarar görmeden ve canlı olarak suya geri gönderilir.</p>
+            <div class="step__meta"><span class="tag tag--k">Canlı geri dönüş</span><span class="tag">Stok koruma</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step__n">4</div>
+          <div class="step__b">
+            <h3 class="step__t">İnsancıl bayıltma</h3>
+            <p class="step__d">Hasada uygun balıklar elektrikli bayıltma ünitesinden geçer. Bilinç saniyeler içinde kapanır; acısız ve stressiz bir süreçtir. Soğuk şok ya da boğulma hiç devreye girmez.</p>
+            <div class="step__meta"><span class="tag tag--k">Elektrikli bayıltma</span><span class="tag">Sensörle optimize voltaj</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step__n">5</div>
+          <div class="step__b">
+            <h3 class="step__t">Kategorizasyon</h3>
+            <p class="step__d">Balıklar türüne ve kalite sınıfına göre otomatik olarak ayrıştırılır ve doğru hatta yönlendirilir. Sınıflandırma, satış fiyatını doğrudan belirleyen veridir.</p>
+            <div class="step__meta"><span class="tag tag--c">Tür ayrımı</span><span class="tag tag--c">A / B kalite</span></div>
+          </div>
+        </li>
+        <li class="step">
+          <div class="step__n">6</div>
+          <div class="step__b">
+            <h3 class="step__t">Çıkış</h3>
+            <p class="step__d">Balıklar bilinci kapalı şekilde sistemden çıkar. İşlem tamamlanır ve parti, sonradan değiştirilemeyecek bir kayda işlenir — soğuk zincirin ilk halkası burada başlar.</p>
+            <div class="step__meta"><span class="tag tag--k">Blok zinciri kaydı</span><span class="tag">Soğuk zincir girişi</span></div>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <h3 style="margin-top:clamp(46px,6vw,74px);font-size:clamp(1.05rem,2.4vw,1.3rem);font-weight:600;font-variation-settings:'wdth' 106">Sahada nasıl konumlanır</h3>
+    <div class="field">
+      <div class="field__i"><div class="field__s">A</div><div class="field__t">Balık çiftliği</div><p class="field__d">Açık deniz kafesleri. ECOLIV mevcut kafes düzenini değiştirmez.</p></div>
+      <div class="field__i"><div class="field__s">B</div><div class="field__t">Balık girişi</div><p class="field__d">Kafesten çıkan balık, boru hattıyla doğrudan cihaza aktarılır.</p></div>
+      <div class="field__i"><div class="field__s">C</div><div class="field__t">ECOLIV cihazı</div><p class="field__d">Tekne güvertesine ya da platforma yerleştirilen analiz + bayıltma ünitesi.</p></div>
+      <div class="field__i"><div class="field__s">D</div><div class="field__t">Taşıma</div><p class="field__d">Kategorize edilmiş ürün, kayıtla birlikte soğuk zincire teslim edilir.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SONUÇLAR -->
+<section class="sect sect--abyss" id="sonuc">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">05</span>
+      <div class="head__body">
+        <h2 class="h2">Ölçülen sonuçlar</h2>
+        <p class="lede">Stres parametreleri düştüğünde kalite, raf ömrü ve enerji verimliliği aynı anda yükseliyor. Aşağıdaki değerler sistemin hedeflediği performans aralığını gösterir.</p>
+      </div>
+    </div>
+
+    <div class="res">
+      <div class="res__c">
+        <div class="res__l">Raf ömrü artışı</div>
+        <div class="res__n">%30</div>
+        <p class="res__d">Stres hormonları düşürüldüğü için soğuk zincir performansı yükselir.</p>
+      </div>
+      <div class="res__c">
+        <div class="res__l">Atık azalımı</div>
+        <div class="res__n">%40</div>
+        <p class="res__d">Yapay zekâ tabanlı seçim ve canlı geri dönüş kanalı israfı azaltır.</p>
+      </div>
+      <div class="res__chart">
+        <h3>Kalite skoru trendi</h3>
+        <p style="font-size:.9rem;color:var(--foam-dim);margin-top:8px;line-height:1.55">ECOLIV bayıltma parametreleri raf ömrünü uzatırken kalite skorlarında stabil artış sağlar.</p>
+        <svg viewBox="0 0 520 250" style="margin-top:18px;width:100%;height:auto" role="img" aria-label="Kalite skoru trendi: ECOLIV ile dört hafta boyunca skor 95'ten 172'ye yükselirken, geleneksel yöntemde 85 civarında sabit kalıyor.">
+          <defs>
+            <linearGradient id="gEco" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2FC9E8" stop-opacity=".35"/>
+              <stop offset="100%" stop-color="#2FC9E8" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <g stroke="rgba(231,243,247,.12)" stroke-width="1">
+            <line x1="56" y1="30" x2="500" y2="30"/><line x1="56" y1="76" x2="500" y2="76"/>
+            <line x1="56" y1="122" x2="500" y2="122"/><line x1="56" y1="168" x2="500" y2="168"/>
+            <line x1="56" y1="206" x2="500" y2="206"/>
+          </g>
+          <g stroke="rgba(231,243,247,.09)" stroke-width="1" stroke-dasharray="3 5">
+            <line x1="204" y1="30" x2="204" y2="206"/><line x1="352" y1="30" x2="352" y2="206"/>
+          </g>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="#9FBECB" text-anchor="end">
+            <text x="46" y="34">180</text><text x="46" y="80">135</text>
+            <text x="46" y="126">90</text><text x="46" y="172">45</text><text x="46" y="210">0</text>
+          </g>
+          <path d="M56 206 L56 121 C 130 96 170 78 204 68 C 270 50 320 41 500 36 L500 206 Z" fill="url(#gEco)"/>
+          <path d="M56 121 C 130 96 170 78 204 68 C 270 50 320 41 500 36" fill="none" stroke="#2FC9E8" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M56 130 C 180 128 300 126 500 124" fill="none" stroke="#FF6F5B" stroke-width="2.2" stroke-linecap="round" opacity=".85"/>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="#9FBECB" text-anchor="middle">
+            <text x="56" y="228">Hafta 1</text><text x="204" y="228">Hafta 2</text>
+            <text x="352" y="228">Hafta 3</text><text x="494" y="228">Hafta 4</text>
+          </g>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="13">
+            <rect x="286" y="182" width="14" height="3" rx="1.5" fill="#2FC9E8"/><text x="306" y="187" fill="#E7F3F7">ECOLIV</text>
+            <rect x="380" y="182" width="14" height="3" rx="1.5" fill="#FF6F5B"/><text x="400" y="187" fill="#9FBECB">Geleneksel</text>
+          </g>
+        </svg>
+      </div>
+      <div class="res__c">
+        <div class="res__l">Enerji tasarrufu</div>
+        <div class="res__n">%20</div>
+        <p class="res__d">Sensör verileri bayıltma parametrelerini sürekli optimize eder.</p>
+      </div>
+      <div class="res__c">
+        <div class="res__l">Blok zinciri kayıt doğruluğu</div>
+        <div class="res__n">%100</div>
+        <p class="res__d">Her hasat partisi değiştirilemez kayıtlara işlenir.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARAYÜZ -->
+<section class="sect sect--paper" id="arayuz">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">06</span>
+      <div class="head__body">
+        <h2 class="h2">Kontrol paneli</h2>
+        <p class="lede">Cihaz tek başına bir makine değil; veri üreten bir sistem. Üretici her partiyi, her voltaj değerini ve her kalite kararını tek ekrandan izler.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel__bar" aria-hidden="true">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="panel__url">ecoliv.fovarin.com/panel</span>
+      </div>
+      <div class="panel__body">
+        <div class="side" role="tablist" aria-label="Panel bölümleri" id="paneltabs">
+          <button class="side__b" role="tab" id="tb-1" aria-controls="tp-1" aria-selected="true">
+            <svg class="side__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            Genel bakış</button>
+          <button class="side__b" role="tab" id="tb-2" aria-controls="tp-2" aria-selected="false">
+            <svg class="side__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M17 12c0 3-3.6 5.5-7 5.5S3 15 3 12s3.6-5.5 7-5.5S17 9 17 12Z"/><path d="m17 12 4-3v6l-4-3Z" stroke-linejoin="round"/><path d="M7.5 11h.01" stroke-linecap="round"/></svg>
+            Balık işleme</button>
+          <button class="side__b" role="tab" id="tb-3" aria-controls="tp-3" aria-selected="false">
+            <svg class="side__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m13 2-9 12h7l-2 8 9-12h-7l2-8Z" stroke-linejoin="round"/></svg>
+            Enerji yönetimi</button>
+          <button class="side__b" role="tab" id="tb-4" aria-controls="tp-4" aria-selected="false">
+            <svg class="side__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+            İzlenebilirlik</button>
+        </div>
+
+        <div class="main">
+          <!-- GENEL BAKIŞ -->
+          <div class="tabpanel" role="tabpanel" id="tp-1" aria-labelledby="tb-1">
+            <h3>ECOLIV kontrol paneli</h3>
+            <div class="main__sub"><span class="pulse" style="width:6px;height:6px"></span>Yapay zekâ destekli balık hasat sistemi — tüm üniteler aktif · 24/7</div>
+            <div class="kpis">
+              <div class="kpi">
+                <div class="kpi__top"><span class="kpi__ic" style="background:rgba(47,201,232,.15);color:#0B7C9C">◍</span><span class="kpi__ch">+%12</span></div>
+                <div class="kpi__n mono">1.234</div><div class="kpi__l">Toplam işlenen · bugün</div>
+                <svg class="kpi__spark" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22 L12 18 L24 24 L36 14 L48 19 L60 9 L72 16 L84 8 L96 13 L108 6 L120 10" fill="none" stroke="#2A8FD0" stroke-width="1.8"/></svg>
+              </div>
+              <div class="kpi">
+                <div class="kpi__top"><span class="kpi__ic" style="background:rgba(70,209,155,.16);color:#1E9E70">▲</span><span class="kpi__ch">+%5</span></div>
+                <div class="kpi__n mono">%87</div><div class="kpi__l">A kalite oranı · hedef %85</div>
+                <svg class="kpi__spark" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 24 L12 20 L24 22 L36 15 L48 17 L60 11 L72 13 L84 8 L96 10 L108 5 L120 7" fill="none" stroke="#22A96F" stroke-width="1.8"/></svg>
+              </div>
+              <div class="kpi">
+                <div class="kpi__top"><span class="kpi__ic" style="background:rgba(244,185,66,.2);color:#9A7415">⚡</span><span class="kpi__ch">+%3</span></div>
+                <div class="kpi__n mono">%28</div><div class="kpi__l">Enerji tasarrufu · bu ay</div>
+                <svg class="kpi__spark" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 20 L12 24 L24 16 L36 21 L48 13 L60 18 L72 11 L84 15 L96 9 L108 12 L120 8" fill="none" stroke="#E0A020" stroke-width="1.8"/></svg>
+              </div>
+              <div class="kpi">
+                <div class="kpi__top"><span class="kpi__ic" style="background:rgba(155,140,255,.18);color:#5A46C8">◷</span><span class="kpi__ch" style="color:var(--ink-dim)">standart 7 gün</span></div>
+                <div class="kpi__n mono">15 gün</div><div class="kpi__l">Ortalama raf ömrü</div>
+                <svg class="kpi__spark" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 25 L12 23 L24 20 L36 21 L48 16 L60 17 L72 12 L84 13 L96 9 L108 8 L120 5" fill="none" stroke="#7A68E0" stroke-width="1.8"/></svg>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px">
+              <div style="border:1px solid var(--hair);border-radius:14px;padding:16px 18px">
+                <div style="font-weight:600;font-size:.95rem">Sistem durumu</div>
+                <div style="margin-top:12px;display:flex;flex-direction:column;gap:9px;font-size:.85rem;color:var(--ink-dim)">
+                  <div style="display:flex;justify-content:space-between;gap:12px"><span>Çekim pompası</span><span class="pill pill--a">Çalışıyor</span></div>
+                  <div style="display:flex;justify-content:space-between;gap:12px"><span>Görüntü işleme</span><span class="pill pill--a">Çalışıyor</span></div>
+                  <div style="display:flex;justify-content:space-between;gap:12px"><span>Bayıltma ünitesi</span><span class="pill pill--a">Çalışıyor</span></div>
+                  <div style="display:flex;justify-content:space-between;gap:12px"><span>Geri dönüş kanalı</span><span class="pill pill--i">Beklemede</span></div>
+                </div>
+              </div>
+              <div style="border:1px solid var(--hair);border-radius:14px;padding:16px 18px">
+                <div style="font-weight:600;font-size:.95rem">Bayıltma parametreleri</div>
+                <div style="margin-top:12px;display:flex;flex-direction:column;gap:9px;font-size:.85rem;color:var(--ink-dim)">
+                  <div style="display:flex;justify-content:space-between;gap:12px"><span>Voltaj aralığı</span><span class="mono" style="color:var(--ink);font-weight:600">70–85 V DC</span></div>
+                  <div style="display:flex;justify-content:space-between;gap:12px"><span>Uygulama süresi</span><span class="mono" style="color:var(--ink);font-weight:600">3,2 sn</span></div>
+                  <div style="display:flex;justify-content:space-between;gap:12px"><span>Su sıcaklığı</span><span class="mono" style="color:var(--ink);font-weight:600">14,6 °C</span></div>
+                  <div style="display:flex;justify-content:space-between;gap:12px"><span>Otomatik optimizasyon</span><span class="pill pill--a">Açık</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BALIK İŞLEME -->
+          <div class="tabpanel" role="tabpanel" id="tp-2" aria-labelledby="tb-2" hidden>
+            <h3>Canlı balık işleme verileri</h3>
+            <div class="main__sub"><span class="pulse" style="width:6px;height:6px"></span>Son 6 kayıt · otomatik yenileniyor</div>
+            <div class="tblwrap">
+              <table>
+                <thead><tr><th>Balık</th><th>Kaynak</th><th>Durum</th><th>Ağırlık</th><th>Raf ömrü</th><th>Voltaj</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>Levrek #1234</strong></td><td>Ege Çiftliği</td><td><span class="pill pill--a">A kalite</span></td><td class="mono">450 g</td><td class="mono">15 gün</td><td class="mono">80 V DC</td></tr>
+                  <tr><td><strong>Çipura #1235</strong></td><td>Ege Çiftliği</td><td><span class="pill pill--b">İşleniyor</span></td><td class="mono">380 g</td><td class="mono">—</td><td class="mono">75 V DC</td></tr>
+                  <tr><td><strong>Levrek #1236</strong></td><td>Ege Çiftliği</td><td><span class="pill pill--a">A kalite</span></td><td class="mono">520 g</td><td class="mono">16 gün</td><td class="mono">80 V DC</td></tr>
+                  <tr><td><strong>Çipura #1237</strong></td><td>Ege Çiftliği</td><td><span class="pill pill--b">B kalite</span></td><td class="mono">340 g</td><td class="mono">13 gün</td><td class="mono">70 V DC</td></tr>
+                  <tr><td><strong>Levrek #1238</strong></td><td>Ege Çiftliği</td><td><span class="pill pill--x">Canlı geri gönderildi</span></td><td class="mono">280 g</td><td class="mono">—</td><td class="mono">—</td></tr>
+                  <tr><td><strong>Çipura #1239</strong></td><td>Ege Çiftliği</td><td><span class="pill pill--i">Hazır</span></td><td class="mono">410 g</td><td class="mono">15 gün</td><td class="mono">78 V DC</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p style="font-size:.8rem;color:var(--ink-dim);margin-top:12px">Boyu yetersiz olduğu için #1238 hattan ayrıldı ve suya geri bırakıldı. Bu karar, yapay zekâ sınıflandırıcısı tarafından 0,4 saniyede verildi.</p>
+          </div>
+
+          <!-- ENERJİ -->
+          <div class="tabpanel" role="tabpanel" id="tp-3" aria-labelledby="tb-3" hidden>
+            <h3>Enerji yönetimi</h3>
+            <div class="main__sub">Bayıltma ünitesi ve pompa tüketimi · son 24 saat</div>
+            <div class="kpis">
+              <div class="kpi"><div class="kpi__n mono">2,4</div><div class="kpi__l">Anlık güç · kW</div></div>
+              <div class="kpi"><div class="kpi__n mono">57,6</div><div class="kpi__l">Günlük tüketim · kWh</div></div>
+              <div class="kpi"><div class="kpi__n mono">%28</div><div class="kpi__l">Tasarruf · geleneksele göre</div></div>
+              <div class="kpi"><div class="kpi__n mono">450</div><div class="kpi__l">Aylık enerji maliyeti · USD</div></div>
+            </div>
+            <div style="border:1px solid var(--hair);border-radius:14px;padding:18px;margin-top:18px">
+              <div style="font-weight:600;font-size:.95rem">Günlük enerji tüketimi</div>
+              <div class="chartscroll"><svg viewBox="0 0 640 170" style="margin-top:14px;width:100%;height:auto" role="img" aria-label="Saatlik enerji tüketimi sütun grafiği. En yüksek tüketim öğleden sonraki hasat penceresinde.">
+                <g fill="#BBD7E6">
+                  <rect x="6" y="118" width="18" height="34" rx="3"/><rect x="32" y="126" width="18" height="26" rx="3"/>
+                  <rect x="58" y="130" width="18" height="22" rx="3"/><rect x="84" y="124" width="18" height="28" rx="3"/>
+                  <rect x="110" y="106" width="18" height="46" rx="3"/><rect x="136" y="84" width="18" height="68" rx="3"/>
+                  <rect x="162" y="62" width="18" height="90" rx="3"/><rect x="188" y="48" width="18" height="104" rx="3"/>
+                  <rect x="214" y="40" width="18" height="112" rx="3"/><rect x="240" y="52" width="18" height="100" rx="3"/>
+                  <rect x="266" y="44" width="18" height="108" rx="3"/><rect x="292" y="36" width="18" height="116" rx="3"/>
+                  <rect x="318" y="30" width="18" height="122" rx="3"/><rect x="344" y="42" width="18" height="110" rx="3"/>
+                  <rect x="396" y="58" width="18" height="94" rx="3"/><rect x="422" y="72" width="18" height="80" rx="3"/>
+                  <rect x="448" y="90" width="18" height="62" rx="3"/><rect x="474" y="104" width="18" height="48" rx="3"/>
+                  <rect x="500" y="114" width="18" height="38" rx="3"/><rect x="526" y="122" width="18" height="30" rx="3"/>
+                  <rect x="552" y="128" width="18" height="24" rx="3"/><rect x="578" y="132" width="18" height="20" rx="3"/>
+                  <rect x="604" y="134" width="18" height="18" rx="3"/>
+                </g>
+                <rect x="370" y="24" width="18" height="128" rx="3" fill="#F4B942"/>
+                <line x1="0" y1="152" x2="640" y2="152" stroke="var(--hair)" stroke-width="1"/>
+                <g font-family="IBM Plex Sans, sans-serif" font-size="12" fill="#7E9CAC">
+                  <text x="6" y="166">00.00</text><text x="162" y="166">06.00</text>
+                  <text x="318" y="166">12.00</text><text x="474" y="166">18.00</text><text x="596" y="166">23.00</text>
+                </g>
+              </svg></div>
+              <p style="font-size:.8rem;color:var(--ink-dim);margin-top:10px">Zirve tüketim 14.00'te hasat penceresinde gerçekleşiyor. Sistem, düşük tarife saatlerine kaydırılabilir bir hasat planı önerir.</p>
+            </div>
+          </div>
+
+          <!-- İZLENEBİLİRLİK -->
+          <div class="tabpanel" role="tabpanel" id="tp-4" aria-labelledby="tb-4" hidden>
+            <h3>Parti izlenebilirliği</h3>
+            <div class="main__sub">Her hasat partisi değiştirilemez bir kayda işlenir</div>
+            <div class="tblwrap">
+              <table>
+                <thead><tr><th>Parti</th><th>Tür</th><th>Adet</th><th>Hasat</th><th>Kayıt</th><th>Sertifika</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono"><strong>#ECO-2419</strong></td><td>Levrek</td><td class="mono">412</td><td class="mono">14.09 · 09.20</td><td class="mono" style="font-size:.78rem">0x7f3a…c21e</td><td><span class="pill pill--a">Doğrulandı</span></td></tr>
+                  <tr><td class="mono"><strong>#ECO-2420</strong></td><td>Çipura</td><td class="mono">386</td><td class="mono">14.09 · 13.05</td><td class="mono" style="font-size:.78rem">0x91b4…7d02</td><td><span class="pill pill--a">Doğrulandı</span></td></tr>
+                  <tr><td class="mono"><strong>#ECO-2421</strong></td><td>Levrek</td><td class="mono">455</td><td class="mono">15.09 · 08.40</td><td class="mono" style="font-size:.78rem">0x2ce8…4a91</td><td><span class="pill pill--a">Doğrulandı</span></td></tr>
+                  <tr><td class="mono"><strong>#ECO-2422</strong></td><td>Karışık</td><td class="mono">298</td><td class="mono">15.09 · 15.12</td><td class="mono" style="font-size:.78rem">0xa05f…b338</td><td><span class="pill pill--i">Yazılıyor</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p style="font-size:.8rem;color:var(--ink-dim);margin-top:12px">Perakendeci ve tüketici, karekod ile balığın hangi kafesten çıktığını, ne zaman hasat edildiğini ve hangi bayıltma parametreleriyle işlendiğini görebilir.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REKABET -->
+<section class="sect sect--deep" id="rekabet">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">07</span>
+      <div class="head__body">
+        <h2 class="h2">Rekabet analizi</h2>
+        <p class="lede">Elektrikli bayıltma pazarında oyuncu var. Ayrım, bayıltmanın kendisinde değil; bayıltmadan önce verilen kararda.</p>
+      </div>
+    </div>
+
+    <div class="cmp">
+      <table>
+        <thead>
+          <tr><th scope="col">Özellik</th><th scope="col" class="own">EcoLiv</th><th scope="col">Ace Aquatec</th><th scope="col">SmileFish</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" style="font-weight:400;text-align:left;padding:13px 14px;color:var(--foam);border-bottom:1px solid var(--foam-faint)">Elektrikli bayıltma</th><td class="own"><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><th scope="row" style="font-weight:400;text-align:left;padding:13px 14px;color:var(--foam);border-bottom:1px solid var(--foam-faint)">Endüstriyel ölçek kullanım</th><td class="own"><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><th scope="row" style="font-weight:400;text-align:left;padding:13px 14px;color:var(--foam);border-bottom:1px solid var(--foam-faint)">Hibrit balıkçılık desteği</th><td class="own"><span class="yes">✓</span></td><td><span class="no">✕</span></td><td><span class="no">✕</span></td></tr>
+          <tr><th scope="row" style="font-weight:400;text-align:left;padding:13px 14px;color:var(--foam);border-bottom:1px solid var(--foam-faint)">Uygun olmayan balıkları koruma</th><td class="own"><span class="yes">✓</span></td><td><span class="no">✕</span></td><td><span class="no">✕</span></td></tr>
+          <tr><th scope="row" style="font-weight:400;text-align:left;padding:13px 14px;color:var(--foam);border-bottom:1px solid var(--foam-faint)">Enerji ve su optimizasyonu</th><td class="own"><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="no">✕</span></td></tr>
+          <tr><th scope="row" style="font-weight:400;text-align:left;padding:13px 14px;color:var(--foam);border-bottom:0">Yapay zekâ analizi</th><td class="own"><span class="yes">✓</span></td><td><span class="no">✕</span></td><td><span class="no">✕</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="src">Rakip özellikleri: Ace Aquatec ürün sayfaları, 2024.</p>
+  </div>
+</section>
+
+<!-- GELİR MODELİ -->
+<section class="sect sect--paper" id="gelir">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">08</span>
+      <div class="head__body">
+        <h2 class="h2">Gelir modeli</h2>
+        <p class="lede">Tek seferlik donanım satışının üzerine, cihazın ürettiği veriden beslenen iki tekrarlayan gelir katmanı biner.</p>
+      </div>
+    </div>
+
+    <div class="rev">
+      <div class="rev__i">
+        <svg class="rev__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2.5" y="5" width="19" height="12" rx="2"/><path d="M8 21h8M12 17v4" stroke-linecap="round"/><path d="M9 11.5 12 8.5l3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="rev__t">Donanım satışı</div>
+        <p class="rev__d">ECOLIV ünitesinin kendisi. Fiziksel ürünün satışından elde edilen gelir ve kurulum hizmeti.</p>
+        <div class="rev__type">Tek seferlik · birim başına</div>
+      </div>
+      <div class="rev__i">
+        <svg class="rev__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.4-9 6 6 0 0 1 11.6 1.6A3.9 3.9 0 0 1 17.5 18H7Z" stroke-linejoin="round"/><path d="M10 13h4M10 16h4" stroke-linecap="round"/></svg>
+        <div class="rev__t">SaaS abonelik geliri</div>
+        <p class="rev__d">Kontrol paneli, yapay zekâ modeli güncellemeleri ve izlenebilirlik altyapısı abonelik modeliyle sunulur.</p>
+        <div class="rev__type">Tekrarlayan · aylık / yıllık</div>
+      </div>
+      <div class="rev__i">
+        <svg class="rev__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/><path d="M6 17.5 9.5 13l3 2.5L18 9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="rev__t">Veri ve analitik geliri</div>
+        <p class="rev__d">Toplanan kalite, verim ve stok verisinin analizi ve içgörülerin sektör paydaşlarına sunulması.</p>
+        <div class="rev__type">Tekrarlayan · kullanım bazlı</div>
+      </div>
+    </div>
+
+    <div class="cost">
+      <div>
+        <div class="cost__n mono">170.000</div>
+        <div class="cost__u">USD / birim maliyet</div>
+      </div>
+      <p class="cost__d">Ortalama 170.000 USD'lik yatırım, senaryoya göre 2–4 yıl arasında geri ödeme sunar ve sonrasında net kâr üretir. Üreticiler sistemi küçük ölçekli çiftliklere kiralayarak ek gelir elde edebilir; küçük üreticiler ise bu sayede yüksek maliyetli teknolojiye erişerek verimliliklerini ve ürün kalitelerini artırabilir.</p>
+    </div>
+
+    <h3 style="margin-top:clamp(40px,5vw,60px);font-size:clamp(1.05rem,2.4vw,1.3rem);font-weight:600;color:var(--ink);font-variation-settings:'wdth' 106">Yatırım getirisi ve etki analizi</h3>
+    <div class="roi">
+      <table>
+        <thead><tr><th>Senaryo</th><th>Fire azalımı</th><th>A kalite artışı</th><th>Raf ömrü uzaması</th><th>Geri ödeme süresi</th></tr></thead>
+        <tbody>
+          <tr class="kot"><td><span class="chip chip--kot">Kötümser</span></td><td class="big mono">%5</td><td class="big mono">%3</td><td class="mono">+3 gün</td><td><span class="chip chip--kot">4 yıl</span></td></tr>
+          <tr class="tem"><td><span class="chip chip--tem">Temel</span></td><td class="big mono">%10</td><td class="big mono">%5</td><td class="mono">+5–6 gün</td><td><span class="chip chip--tem">2,5 yıl</span></td></tr>
+          <tr class="iyi"><td><span class="chip chip--iyi">İyimser</span></td><td class="big mono">%15</td><td class="big mono">%8</td><td class="mono">+6–7 gün</td><td><span class="chip chip--iyi">&lt; 2 yıl</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PAZAR -->
+<section class="sect sect--abyss" id="pazar">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">09</span>
+      <div class="head__body">
+        <h2 class="h2">Pazar büyüklüğü</h2>
+        <p class="lede">Su ürünleri yetiştiriciliği, gıda perakendesinin en hızlı büyüyen kollarından biri. ECOLIV'in ilk hedefi bu pazarın küçük ama ulaşılabilir bir diliminde kalıcı olmak.</p>
+      </div>
+    </div>
+
+    <div class="mkt">
+      <svg viewBox="0 0 560 420" role="img" aria-label="Pazar büyüklüğü halkaları: TAM 14,8 trilyon dolar, SAM 1,26 trilyon dolar, SOM 417 milyar dolar; beş yıl içinde hedeflenen pay 5 milyon dolar.">
+        <circle cx="200" cy="210" r="188" fill="rgba(47,201,232,.05)" stroke="rgba(47,201,232,.4)" stroke-width="1.2"/>
+        <circle cx="205" cy="228" r="132" fill="rgba(47,201,232,.09)" stroke="rgba(47,201,232,.55)" stroke-width="1.2"/>
+        <circle cx="200" cy="248" r="66" fill="rgba(255,111,91,.12)" stroke="#FF6F5B" stroke-width="1.4"/>
+        <g font-family="Archivo, sans-serif" text-anchor="middle">
+          <text x="200" y="56" fill="#9FBECB" font-size="17" font-weight="700" letter-spacing="1.5">TAM</text>
+          <text x="200" y="82" fill="#E7F3F7" font-size="22" font-weight="800">14,8 T $</text>
+          <text x="205" y="128" fill="#9FBECB" font-size="15" font-weight="700" letter-spacing="1.5">SAM</text>
+          <text x="205" y="151" fill="#E7F3F7" font-size="19" font-weight="800">1,26 T $</text>
+          <text x="200" y="240" fill="#FFB5A8" font-size="14" font-weight="700" letter-spacing="1.5">SOM</text>
+          <text x="200" y="262" fill="#E7F3F7" font-size="18" font-weight="800">417 B $</text>
+        </g>
+        <path d="M268 248 L432 248 m-10 -7 l10 7 -10 7" fill="none" stroke="rgba(231,243,247,.5)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="492" cy="248" r="56" fill="none" stroke="#2FC9E8" stroke-width="1.6"/>
+        <g font-family="Archivo, sans-serif" text-anchor="middle">
+          <text x="492" y="245" fill="#2FC9E8" font-size="26" font-weight="900">5 M $</text>
+          <text x="492" y="268" fill="#9FBECB" font-size="12" font-weight="600">5 yıl içinde</text>
+        </g>
+      </svg>
+
+      <div class="mkt__list">
+        <div class="mkt__r">
+          <span class="mkt__k">TAM</span>
+          <span class="mkt__d">Küresel gıda ve market perakendesi — ürünün nihai olarak dokunduğu toplam pazar.</span>
+          <span class="mkt__v">14,8 T $</span>
+        </div>
+        <div class="mkt__r">
+          <span class="mkt__k">SAM</span>
+          <span class="mkt__d">Su ürünleri ve balık pazarının ECOLIV'in hizmet verebileceği bölümü.</span>
+          <span class="mkt__v">1,26 T $</span>
+        </div>
+        <div class="mkt__r">
+          <span class="mkt__k">SOM</span>
+          <span class="mkt__d">Endüstriyel ölçekte yetiştiricilik yapan, cihazı satın alabilecek işletmeler.</span>
+          <span class="mkt__v">417 B $</span>
+        </div>
+        <div class="mkt__r">
+          <span class="mkt__k" style="color:var(--kelp)">Hedef</span>
+          <span class="mkt__d">Beş yıl sonunda ulaşılması planlanan yıllık gelir.</span>
+          <span class="mkt__v" style="color:var(--kelp)">5 M $</span>
+        </div>
+        <p class="src" style="margin-top:20px">Mordor Intelligence, Fish Market Report (2025–2030) · Grand View Research, Food &amp; Grocery Retail Market Size &amp; Share Analysis (2024–2030) · Grand View Research, Aquaculture Market Size, Share &amp; Growth Report (2024–2030).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAYDAŞ ETKİSİ -->
+<section class="sect sect--paper" id="etki">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">10</span>
+      <div class="head__body">
+        <h2 class="h2">Kim ne kazanır</h2>
+        <p class="lede">Aynı cihaz, zincirin üç halkasına farklı bir şey veriyor.</p>
+      </div>
+    </div>
+
+    <div class="stake">
+      <div class="stake__g">
+        <h3>Üretici için</h3>
+        <div class="stake__row">
+          <div class="stake__c">
+            <span class="stake__ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1M18.7 18.7l-2.1-2.1M7.4 7.4 5.3 5.3" stroke-linecap="round"/></svg></span>
+            <div><div class="stake__t">Verimli hasat</div><p class="stake__d">Yapay zekâ destekli sistem, fireyi azaltır ve üretim verimini artırır.</p></div>
+          </div>
+          <div class="stake__c stake__c--hi">
+            <span class="stake__ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v18" stroke-linecap="round"/><path d="M16 7.5c0-1.6-1.8-2.8-4-2.8S8 5.9 8 7.5s1.8 2.4 4 3 4 1.4 4 3-1.8 2.8-4 2.8-4-1.2-4-2.8" stroke-linecap="round"/></svg></span>
+            <div><div class="stake__t">Düşük maliyet</div><p class="stake__d">Enerji ve su tasarrufuyla işletme giderlerini düşürür.</p></div>
+          </div>
+          <div class="stake__c">
+            <span class="stake__ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="9" r="5.2"/><path d="m8.6 13.6-1.4 7 4.8-2.6 4.8 2.6-1.4-7" stroke-linejoin="round"/></svg></span>
+            <div><div class="stake__t">Marka güveni</div><p class="stake__d">Etik üretim ve tam izlenebilirlik markanın itibarını güçlendirir.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stake__g">
+        <h3>Yatırımcı için</h3>
+        <div class="stake__row">
+          <div class="stake__c">
+            <span class="stake__ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 17 9 11l4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <div><div class="stake__t">Büyüyen pazar</div><p class="stake__d">Gıda teknolojileri küresel ölçekte değer kazanıyor.</p></div>
+          </div>
+          <div class="stake__c stake__c--hi">
+            <span class="stake__ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg></span>
+            <div><div class="stake__t">Ölçeklenebilir model</div><p class="stake__d">Donanım ve yazılım geliriyle sürdürülebilir kâr yapısı sunar.</p></div>
+          </div>
+          <div class="stake__c">
+            <span class="stake__ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M3.5 12h17M12 3.4c2.4 2.5 3.6 5.5 3.6 8.6s-1.2 6.1-3.6 8.6c-2.4-2.5-3.6-5.5-3.6-8.6S9.6 5.9 12 3.4Z"/></svg></span>
+            <div><div class="stake__t">Somut etki</div><p class="stake__d">Hem çevresel hem ekonomik faydayı aynı anda ölçülebilir kılar.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stake__g">
+        <h3>Tüketici için</h3>
+        <div class="stake__row">
+          <div class="stake__c">
+            <span class="stake__ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4.5 8h15l-1.2 12.2a1.5 1.5 0 0 1-1.5 1.3H7.2a1.5 1.5 0 0 1-1.5-1.3L4.5 8Z" stroke-linejoin="round"/><path d="M8.6 8V6.2a3.4 3.4 0 0 1 6.8 0V8" stroke-linecap="round"/></svg></span>
+            <div><div class="stake__t">Daha taze ürün</div><p class="stake__d">Raf ömrü uzamış, kaliteli ve güvenilir balık.</p></div>
+          </div>
+          <div class="stake__c stake__c--hi">
+            <span class="stake__ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12Z" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.8"/></svg></span>
+            <div><div class="stake__t">Şeffaf tedarik zinciri</div><p class="stake__d">Dijital izlenebilirlik sayesinde ürünün kaynağı görünür.</p></div>
+          </div>
+          <div class="stake__c">
+            <span class="stake__ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 20.3s-7.8-4.6-7.8-9.7a4.4 4.4 0 0 1 7.8-2.8 4.4 4.4 0 0 1 7.8 2.8c0 5.1-7.8 9.7-7.8 9.7Z" stroke-linejoin="round"/></svg></span>
+            <div><div class="stake__t">Etik seçim</div><p class="stake__d">Hayvan refahına duyarlı üretimle vicdan rahatlığı sağlar.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- YOL HARİTASI -->
+<section class="sect sect--deep" id="yol">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">11</span>
+      <div class="head__body">
+        <h2 class="h2">Uluslararası genişleme</h2>
+        <p class="lede">Hayvan refahı mevzuatının en sıkı, su ürünleri yetiştiriciliğinin en yoğun olduğu pazarlar sırayla hedefleniyor. Türkiye ilk saha, İskandinavya ilk ihracat hattı.</p>
+      </div>
+    </div>
+
+    <div class="roadmap">
+      <div class="rm rm--now"><div class="rm__n">01 · ŞİMDİ</div><div class="rm__c">Türkiye</div><div class="rm__w">Pilot kurulum ve saha doğrulaması</div></div>
+      <div class="rm"><div class="rm__n">02</div><div class="rm__c">Norveç</div><div class="rm__w">Somon yetiştiriciliğinde ölçek</div></div>
+      <div class="rm"><div class="rm__n">03</div><div class="rm__c">Danimarka</div><div class="rm__w">Refah mevzuatı uyumu</div></div>
+      <div class="rm"><div class="rm__n">04</div><div class="rm__c">İzlanda</div><div class="rm__w">Soğuk su türleri</div></div>
+      <div class="rm"><div class="rm__n">05</div><div class="rm__c">İsviçre</div><div class="rm__w">Premium perakende kanalı</div></div>
+      <div class="rm"><div class="rm__n">06</div><div class="rm__c">Hollanda</div><div class="rm__w">Avrupa dağıtım merkezi</div></div>
+      <div class="rm"><div class="rm__n">07</div><div class="rm__c">Kanada</div><div class="rm__w">Kuzey Amerika girişi</div></div>
+      <div class="rm"><div class="rm__n">08</div><div class="rm__c">Yeni Zelanda</div><div class="rm__w">Güney yarımküre sezonu</div></div>
+      <div class="rm"><div class="rm__n">09</div><div class="rm__c">İsveç</div><div class="rm__w">Sertifikasyon ortaklıkları</div></div>
+      <div class="rm"><div class="rm__n">10</div><div class="rm__c">Avustralya</div><div class="rm__w">Bölgesel servis ağı</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- İHTİYAÇLAR -->
+<section class="sect sect--paper" id="ihtiyac">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">12</span>
+      <div class="head__body">
+        <h2 class="h2">İhtiyaçlarımız</h2>
+        <p class="lede">Prototipi sahaya taşımak için dört şeye ihtiyacımız var.</p>
+      </div>
+    </div>
+    <div class="needs">
+      <div class="need">
+        <svg class="need__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 10.5c2.5-2 5-2 7.5 0l3 2.4c1.4 1.1 1.3 3.2-.2 4.2-1 .7-2.4.6-3.4-.2L8 15.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17.5" cy="8" r="3.5"/></svg>
+        <div class="need__t">Maddi destek</div>
+        <p class="need__d">Saha prototipinin üretimi, sertifikasyon süreçleri ve ilk pilot kurulum için sermaye.</p>
+      </div>
+      <div class="need">
+        <svg class="need__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6Z" stroke-linejoin="round"/><path d="M9 21h6M12 17v4M8 10.5h8M8 13.5h5" stroke-linecap="round"/></svg>
+        <div class="need__t">Sponsorluk</div>
+        <p class="need__d">Donanım bileşenleri, test havuzu erişimi ve saha denemeleri için kurumsal destek.</p>
+      </div>
+      <div class="need">
+        <svg class="need__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" stroke-linecap="round"/><path d="m18.5 4.5 1 1 2-2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="need__t">Mentör</div>
+        <p class="need__d">Su ürünleri, gıda güvenliği ve donanım ölçeklendirme alanlarında deneyimli yönlendirme.</p>
+      </div>
+      <div class="need">
+        <svg class="need__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5.5" cy="6" r="2.5"/><circle cx="18.5" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 6h8M6.8 8.2 10.6 15.8M17.2 8.2 13.4 15.8" stroke-linecap="round"/></svg>
+        <div class="need__t">Network</div>
+        <p class="need__d">Çiftlik işletmecileri, perakende zincirleri ve sertifikasyon kuruluşlarıyla bağlantı.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKA -->
+<section class="sect sect--abyss" id="ska">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">13</span>
+      <div class="head__body">
+        <h2 class="h2">Katkı sunduğu<br>küresel amaçlar</h2>
+        <p class="lede">ECOLIV, Birleşmiş Milletler Sürdürülebilir Kalkınma Amaçlarından sekizine doğrudan temas ediyor; Avrupa Yeşil Mutabakatı ve FAO'nun su ürünleri hedefleriyle aynı yöne bakıyor.</p>
+      </div>
+    </div>
+    <div class="sdg">
+      <div class="sdg__i" style="background:#DDA63A"><div class="sdg__n">2</div><div class="sdg__t">Açlığa son</div></div>
+      <div class="sdg__i" style="background:#4C9F38"><div class="sdg__n">3</div><div class="sdg__t">Sağlık ve kaliteli yaşam</div></div>
+      <div class="sdg__i" style="background:#26BDE2"><div class="sdg__n">6</div><div class="sdg__t">Temiz su ve sanitasyon</div></div>
+      <div class="sdg__i" style="background:#A21942"><div class="sdg__n">8</div><div class="sdg__t">İnsana yakışır iş ve ekonomik büyüme</div></div>
+      <div class="sdg__i" style="background:#FD6925"><div class="sdg__n">9</div><div class="sdg__t">Sanayi, yenilikçilik ve altyapı</div></div>
+      <div class="sdg__i" style="background:#BF8B2E"><div class="sdg__n">12</div><div class="sdg__t">Sorumlu üretim ve tüketim</div></div>
+      <div class="sdg__i" style="background:#3F7E44"><div class="sdg__n">13</div><div class="sdg__t">İklim eylemi</div></div>
+      <div class="sdg__i" style="background:#0A97D9"><div class="sdg__n">14</div><div class="sdg__t">Sudaki yaşam</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- KAYNAKÇA -->
+<section class="sect sect--paper" id="kaynak">
+  <div class="wrap">
+    <div class="head">
+      <span class="head__idx">14</span>
+      <div class="head__body">
+        <h2 class="h2">Kaynakça</h2>
+      </div>
+    </div>
+    <div class="refs">
+      <div class="ref"><div class="ref__k">Küresel üretim, trend</div><div class="ref__b">FAO, 2024 — The State of World Fisheries and Aquaculture.</div></div>
+      <div class="ref"><div class="ref__k">Bağlılık, stok baskısı</div><div class="ref__b">WWF, 2019 — Sustainable seafood: reliance &amp; exploitation.</div></div>
+      <div class="ref"><div class="ref__k">Balık refahı</div><div class="ref__b">Mercogliano &amp; Dongo, 2023 — Electrical stunning vs cold holding. Italian Journal of Food Safety.</div></div>
+      <div class="ref"><div class="ref__k">Karşılaştırma</div><div class="ref__b">Gräns ve ark., 2015 — CO₂ vs electricity stunning. Animal.</div></div>
+      <div class="ref"><div class="ref__k">Teknik ve refah</div><div class="ref__b">Didik ve ark., 2023 — Electrical stunning equipment &amp; welfare. Frontiers in Aquaculture.</div></div>
+      <div class="ref"><div class="ref__k">Raf ömrü teknikleri</div><div class="ref__b">FAO, 2016 — Innovative preservation methods.</div></div>
+      <div class="ref"><div class="ref__k">Enerji tasarrufu</div><div class="ref__b">Ozen ve ark., 2023 — Energy management in cold chains. Frontiers in Sustainable Food Systems.</div></div>
+      <div class="ref"><div class="ref__k">İzlenebilirlik</div><div class="ref__b">Pathirana ve ark., 2023 — Blockchain + IoT in fish supply chains. Sensors.</div></div>
+      <div class="ref"><div class="ref__k">Ekolojik model</div><div class="ref__b">Loayza-Aguilar ve ark., 2023 — IMTA model, Samanco Bay. Frontiers in Marine Science.</div></div>
+      <div class="ref"><div class="ref__k">Azot ve CO₂ azalımı, kârlılık</div><div class="ref__b">Nobre ve ark., 2010 — Abalone monoculture vs IMTA. Aquaculture.</div></div>
+      <div class="ref"><div class="ref__k">Faydalar</div><div class="ref__b">Liu &amp; Fang, 2019 — Polyculture &amp; IMTA review. Journal of Environmental Research.</div></div>
+      <div class="ref"><div class="ref__k">Verim</div><div class="ref__b">Barman ve ark., 2019 — GIFT tilapia mono vs poly. Aquaculture International.</div></div>
+      <div class="ref"><div class="ref__k">AIoT uygulamaları</div><div class="ref__b">Eco Magazine, 2022 — AI in aquaculture.</div></div>
+      <div class="ref"><div class="ref__k">Pazar trendleri</div><div class="ref__b">StartUs Insights, 2025 — Top 10 aquaculture trends.</div></div>
+      <div class="ref"><div class="ref__k">Rakip özellikleri</div><div class="ref__b">Ace Aquatec ürün sayfaları, 2024.</div></div>
+      <div class="ref"><div class="ref__k">Çift tür ayrımı, parametre tabloları</div><div class="ref__b">ECOLIV — Detaylı teknik rapor v3, 2025.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- KAPANIŞ -->
+<section class="close">
+  <div class="close__rays" aria-hidden="true"></div>
+  <div class="close__in">
+    <h2>Balıkçılıkta<br>yeni standart</h2>
+    <p>Bugün anlattığımız şey sadece bir teknoloji değil, gelecek için verilen bir mücadeledir.</p>
+    <a class="close__link" href="https://ecoliv.fovarin.com">ecoliv.fovarin.com</a>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="foot__in">
+    <span>ECOLIV — Geleneksel balıkçılığı geleceğe taşıyan akıllı çözüm</span>
+    <span><a href="#top">Başa dön</a></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* --- panel sekmeleri --- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.side__b'));
+  function select(btn){
+    tabs.forEach(function(t){
+      var on = t === btn;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      var panel = document.getElementById(t.getAttribute('aria-controls'));
+      if (panel) panel.hidden = !on;
+    });
+  }
+  tabs.forEach(function(t, i){
+    t.addEventListener('click', function(){ select(t); });
+    t.addEventListener('keydown', function(e){
+      var d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1
+            : e.key === 'ArrowLeft'  || e.key === 'ArrowUp'   ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      var n = tabs[(i + d + tabs.length) % tabs.length];
+      n.focus(); select(n);
+    });
+  });
+
+  /* --- derinlik şeridi + gezinme vurgusu --- */
+  var ticks = Array.prototype.slice.call(document.querySelectorAll('.depth__tick'));
+  var val = document.getElementById('depthVal');
+  var links = Array.prototype.slice.call(document.querySelectorAll('#navlinks a'));
+  var targets = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  var ticking = false;
+
+  function update(){
+    ticking = false;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var p = h > 0 ? Math.min(1, Math.max(0, window.scrollY / h)) : 0;
+    var active = Math.round(p * (ticks.length - 1));
+    ticks.forEach(function(t, i){ t.classList.toggle('on', i <= active); });
+    if (val) val.textContent = Math.round(p * 120) + ' m';
+
+    var cur = -1, y = window.scrollY + 140;
+    targets.forEach(function(el, i){ if (el && el.offsetTop <= y) cur = i; });
+    links.forEach(function(a, i){
+      if (i === cur) a.setAttribute('aria-current', 'true');
+      else a.removeAttribute('aria-current');
+    });
+  }
+  window.addEventListener('scroll', function(){
+    if (!ticking){ ticking = true; window.requestAnimationFrame(update); }
+  }, { passive: true });
+  window.addEventListener('resize', update, { passive: true });
+  update();
+})();
+</script>
+
+</body>
+</html>
